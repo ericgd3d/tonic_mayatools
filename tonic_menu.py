@@ -12,7 +12,7 @@ def create_menu():
 
     """Creates the CMT menu."""
     gmainwindow = mel.eval('$tmp = $gMainWindow;')
-    menu = cmds.menu(parent=gmainwindow, tearOff=True, label='TonicDNA_Menu')
+    menu = cmds.menu(parent=gmainwindow, tearOff=True, label='TonicDNA')
 
     tonic_anim_menu = cmds.menuItem(subMenu=True, tearOff=True, parent=menu, label='Animation')
 
