@@ -21,9 +21,6 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
 
     abcExportPath = getExportPath(scene_path)
 
-
-
-
     startFrame = cmds.playbackOptions(query=True, min=True)
     endFrame = cmds.playbackOptions(query=True, max=True)
 
@@ -49,7 +46,8 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
             print(command)
             cmds.AbcExport(v=True, j=command)
 
-            #shutil.move(tmpout, abcPath)
+            print('Saving ' + abcPath)
+            shutil.move(tmpout, abcPath)
     print('Done')
 
 def getExportPath(scene_path):
