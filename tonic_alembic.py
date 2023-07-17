@@ -1,5 +1,5 @@
 import shutil
-
+import os
 import maya.cmds as cmds
 import tempfile
 import ctypes
@@ -12,6 +12,14 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
 
     scene_path = cmds.file(query=True, sceneName=True)
 
+    print(scene_path)
+    file_name = os.path.basename(scene_path)  # Get the base name with extension
+    file_name_without_extension = os.path.splitext(file_name)[0]  # Remove the extension
+
+    print(file_name_without_extension)
+
+
+
     temp_dir = tempfile.gettempdir()
     full_temp_dir = ctypes.create_unicode_buffer(512)
     ctypes.windll.kernel32.GetLongPathNameW(temp_dir, full_temp_dir, ctypes.sizeof(full_temp_dir))
@@ -19,34 +27,49 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
     tmpDir = (full_temp_dir.value).replace("\\", "/")
 
 
-    abcExportPath = getExportPath(scene_path)
+    abcExportPathDir = getExportPath(scene_path) + '/' + file_name_without_extension
 
     startFrame = cmds.playbackOptions(query=True, min=True)
     endFrame = cmds.playbackOptions(query=True, max=True)
 
     selNodes = cmds.ls(sl=True, l=True)
     allSelReferenceNodes = find_referenced_nodes(selNodes)
-    #print(allSelReferenceNodes)
+
 
     for refNode in allSelReferenceNodes:
         referenced_nodes = cmds.referenceQuery(refNode, nodes=True)
 
         if referenced_nodes:
+
+            nodeToExport = referenced_nodes[0]
+            for currRefNode in referenced_nodes:
+                if currRefNode.endswith(':renderGeo_grp'):
+                    nodeToExport = currRefNode
+
+            #Add currscene attr to root node
+            cmds.addAttr(nodeToExport, ln="source", dt="string")
+            cmds.setAttr(nodeToExport + ".source", scene_path, type="string")
+
             refNS = cmds.referenceQuery(refNode, namespace=True)[1:]
 
-            #print(refNS)
-            abcPath = abcExportPath + '/' + refNS + '.abc'
+            abcPath = abcExportPathDir + '/' + refNS + '.abc'
             tmpout = tmpDir + '/' + refNS + '.abc'
 
-            options = '-uvWrite -ro -worldSpace -writeCreases -writeUVSets -writeVisibility -dataFormat ogawa'
+            options = '-attr source -uvWrite -ro -worldSpace -writeCreases -writeUVSets -writeVisibility -dataFormat ogawa'
 
             command = '-frameRange ' + str(startFrame) + ' ' + str(endFrame) + ' ' + options
-            command += ' -root ' + referenced_nodes[0]
+            command += ' -root ' + nodeToExport
             command += ' -file ' + tmpout
             print(command)
+
             cmds.AbcExport(v=True, j=command)
 
+            #Delete the extra attribute
+            cmds.deleteAttr(nodeToExport, attribute='source')
+
             print('Saving ' + abcPath)
+            if not os.path.exists(abcExportPathDir):
+                os.makedirs(abcExportPathDir)
             shutil.move(tmpout, abcPath)
     print('Done')
 
