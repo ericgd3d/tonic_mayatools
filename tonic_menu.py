@@ -17,8 +17,8 @@ def create_menu():
     tonic_anim_menu = cmds.menuItem(subMenu=True, tearOff=True, parent=menu, label='Animation')
 
     cmds.menuItem(parent=tonic_anim_menu,
-                  label='Export to Alembic',
+                  label='Export Selected to Alembic',
                   #command='import tonic_exportAbcGUI;mainwindow=tonic_exportAbcGUI.MainWindow()',
-                  command='import tonic_alembic; tonic_alembic.exportAbc())',
+                  command='import tonic_alembic;tonic_alembic.ton_legacy_export_sel_abc()',
                   imageOverlayLabel='ExportAbc')
 
