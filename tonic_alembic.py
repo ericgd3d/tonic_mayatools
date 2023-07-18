@@ -35,22 +35,55 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
     selNodes = cmds.ls(sl=True, l=True)
     allSelReferenceNodes = find_referenced_nodes(selNodes)
 
+    if allSelReferenceNodes:
+        for refNode in allSelReferenceNodes:
+            referenced_nodes = cmds.referenceQuery(refNode, nodes=True)
 
-    for refNode in allSelReferenceNodes:
-        referenced_nodes = cmds.referenceQuery(refNode, nodes=True)
+            if referenced_nodes:
 
-        if referenced_nodes:
+                nodeToExport = referenced_nodes[0]
+                for currRefNode in referenced_nodes:
+                    if currRefNode.endswith(':renderGeo_grp'):
+                        nodeToExport = currRefNode
 
-            nodeToExport = referenced_nodes[0]
-            for currRefNode in referenced_nodes:
+                #Add currscene attr to root node
+                cmds.addAttr(nodeToExport, ln="source", dt="string")
+                cmds.setAttr(nodeToExport + ".source", scene_path, type="string")
+
+                refNS = cmds.referenceQuery(refNode, namespace=True)[1:]
+
+                abcPath = abcExportPathDir + '/' + refNS + '.abc'
+                tmpout = tmpDir + '/' + refNS + '.abc'
+
+                options = '-attr source -uvWrite -ro -worldSpace -writeCreases -writeUVSets -writeVisibility -dataFormat ogawa'
+
+                command = '-frameRange ' + str(startFrame) + ' ' + str(endFrame) + ' ' + options
+                command += ' -root ' + nodeToExport
+                command += ' -file ' + tmpout
+                print(command)
+
+                cmds.AbcExport(v=True, j=command)
+
+                #Delete the extra attribute
+                cmds.deleteAttr(nodeToExport, attribute='source')
+
+                print('Saving ' + abcPath)
+                if not os.path.exists(abcExportPathDir):
+                    os.makedirs(abcExportPathDir)
+                shutil.move(tmpout, abcPath)
+    else:
+        for node in selNodes:
+            nodeToExport = node
+            allDesc = list_hierarchy(node)
+            for currRefNode in allDesc:
                 if currRefNode.endswith(':renderGeo_grp'):
                     nodeToExport = currRefNode
 
-            #Add currscene attr to root node
+            # Add currscene attr to root node
             cmds.addAttr(nodeToExport, ln="source", dt="string")
             cmds.setAttr(nodeToExport + ".source", scene_path, type="string")
 
-            refNS = cmds.referenceQuery(refNode, namespace=True)[1:]
+            refNS = node.split(':')[0].lstrip('|')
 
             abcPath = abcExportPathDir + '/' + refNS + '.abc'
             tmpout = tmpDir + '/' + refNS + '.abc'
@@ -64,15 +97,16 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
 
             cmds.AbcExport(v=True, j=command)
 
-            #Delete the extra attribute
+            # Delete the extra attribute
             cmds.deleteAttr(nodeToExport, attribute='source')
 
             print('Saving ' + abcPath)
             if not os.path.exists(abcExportPathDir):
                 os.makedirs(abcExportPathDir)
             shutil.move(tmpout, abcPath)
-    print('Done')
 
+    print('Done')
+7
 def getExportPath(scene_path):
     import os
     input_file_dir = scene_path
