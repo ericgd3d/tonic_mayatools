@@ -46,6 +46,11 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
                     if currRefNode.endswith(':renderGeo_grp'):
                         nodeToExport = currRefNode
 
+                # Temporary hide visible non meshes for the export
+                all_non_mesh_shapes = get_all_non_mesh_shape_descendant(nodeToExport)
+                for non_mesh_shape in all_non_mesh_shapes:
+                    cmds.setAttr(non_mesh_shape+'.visibility', 0)
+
                 #Add currscene attr to root node
                 cmds.addAttr(nodeToExport, ln="source", dt="string")
                 cmds.setAttr(nodeToExport + ".source", scene_path, type="string")
@@ -67,6 +72,10 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
                 #Delete the extra attribute
                 cmds.deleteAttr(nodeToExport, attribute='source')
 
+                #Restore visibility of non mesh shapes
+                for non_mesh_shape in all_non_mesh_shapes:
+                    cmds.setAttr(non_mesh_shape+'.visibility', 1)
+
                 print('Saving ' + abcPath)
                 if not os.path.exists(abcExportPathDir):
                     os.makedirs(abcExportPathDir)
@@ -78,6 +87,11 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
             for currRefNode in allDesc:
                 if currRefNode.endswith(':renderGeo_grp'):
                     nodeToExport = currRefNode
+
+            # Temporary hide visible non meshes for the export
+            all_non_mesh_shapes = get_all_non_mesh_shape_descendant(nodeToExport)
+            for non_mesh_shape in all_non_mesh_shapes:
+                cmds.setAttr(non_mesh_shape + '.visibility', 0)
 
             # Add currscene attr to root node
             cmds.addAttr(nodeToExport, ln="source", dt="string")
@@ -100,13 +114,17 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
             # Delete the extra attribute
             cmds.deleteAttr(nodeToExport, attribute='source')
 
+            # Restore visibility of non mesh shapes
+            for non_mesh_shape in all_non_mesh_shapes:
+                cmds.setAttr(non_mesh_shape + '.visibility', 1)
+
             print('Saving ' + abcPath)
             if not os.path.exists(abcExportPathDir):
                 os.makedirs(abcExportPathDir)
             shutil.move(tmpout, abcPath)
 
     print('Done')
-7
+
 def getExportPath(scene_path):
     import os
     input_file_dir = scene_path
@@ -143,5 +161,15 @@ def list_hierarchy(node):
         hierarchy.append(rel)
     return hierarchy
 
+def get_all_non_mesh_shape_descendant(node):
 
+    allRelWithShapes = cmds.listRelatives(node, ad=True, f=True)
+    non_mesh = []
+    for rel in allRelWithShapes:
+        curr_visibility = cmds.getAttr(rel+'.visibility')
+        if curr_visibility:
+            objType = cmds.objectType(rel)
+            if objType != 'transform' and objType != 'mesh':
+                non_mesh.append(rel)
 
+    return non_mesh
