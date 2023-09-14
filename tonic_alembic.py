@@ -35,11 +35,16 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
     selNodes = cmds.ls(sl=True, l=True)
     allSelReferenceNodes = find_referenced_nodes(selNodes)
 
+    all_locked_vis_node = get_all_node_with_locked_vis()
+
+
     if allSelReferenceNodes:
         for refNode in allSelReferenceNodes:
             referenced_nodes = cmds.referenceQuery(refNode, nodes=True)
 
             if referenced_nodes:
+
+                nodes_we_unlocked = []
 
                 nodeToExport = referenced_nodes[0]
                 for currRefNode in referenced_nodes:
@@ -49,6 +54,10 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
                 # Temporary hide visible non meshes for the export
                 all_non_mesh_shapes = get_all_non_mesh_shape_descendant(nodeToExport)
                 for non_mesh_shape in all_non_mesh_shapes:
+                    if non_mesh_shape in all_locked_vis_node:
+                        #Unlock it first
+                        cmds.setAttr(non_mesh_shape+'.visibility',lock=False)
+                        nodes_we_unlocked.append(non_mesh_shape)
                     cmds.setAttr(non_mesh_shape+'.visibility', 0)
 
                 #Add currscene attr to root node
@@ -76,6 +85,10 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
                 for non_mesh_shape in all_non_mesh_shapes:
                     cmds.setAttr(non_mesh_shape+'.visibility', 1)
 
+                # Restore locked visibility of non mesh shapes
+                for unlocked_vis_node in nodes_we_unlocked:
+                    cmds.setAttr(unlocked_vis_node + '.visibility', lock=True)
+
                 print('Saving ' + abcPath)
                 if not os.path.exists(abcExportPathDir):
                     os.makedirs(abcExportPathDir)
@@ -88,9 +101,15 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
                 if currRefNode.endswith(':renderGeo_grp'):
                     nodeToExport = currRefNode
 
+            nodes_we_unlocked = []
+
             # Temporary hide visible non meshes for the export
             all_non_mesh_shapes = get_all_non_mesh_shape_descendant(nodeToExport)
             for non_mesh_shape in all_non_mesh_shapes:
+                if non_mesh_shape in all_locked_vis_node:
+                    # Unlock it first
+                    cmds.setAttr(non_mesh_shape + '.visibility', lock=False)
+                    nodes_we_unlocked.append(non_mesh_shape)
                 cmds.setAttr(non_mesh_shape + '.visibility', 0)
 
             # Add currscene attr to root node
@@ -117,6 +136,10 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
             # Restore visibility of non mesh shapes
             for non_mesh_shape in all_non_mesh_shapes:
                 cmds.setAttr(non_mesh_shape + '.visibility', 1)
+
+            # Restore locked visibility of non mesh shapes
+            for unlocked_vis_node in nodes_we_unlocked:
+                cmds.setAttr(unlocked_vis_node + '.visibility', lock=True)
 
             print('Saving ' + abcPath)
             if not os.path.exists(abcExportPathDir):
@@ -169,7 +192,17 @@ def get_all_non_mesh_shape_descendant(node):
         curr_visibility = cmds.getAttr(rel+'.visibility')
         if curr_visibility:
             objType = cmds.objectType(rel)
-            if objType != 'transform' and objType != 'mesh':
+            if objType != 'transform' and objType != 'mesh' and objType != 'camera':
                 non_mesh.append(rel)
 
     return non_mesh
+
+
+def get_all_node_with_locked_vis():
+    all_locked_visibility_nodes = []
+    all_nodes = cmds.ls(l=True)
+    for n in all_nodes:
+        if cmds.attributeQuery('visibility', node=n, exists=True):
+            if cmds.getAttr(n+'.visibility', lock=True):
+                all_locked_visibility_nodes.append(n)
+    return all_locked_visibility_nodes
