@@ -33,6 +33,8 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
     startFrame = cmds.playbackOptions(query=True, min=True)
     endFrame = cmds.playbackOptions(query=True, max=True)
 
+    abc_options = '-attr source -uvWrite -ro -worldSpace -stripNamespaces -writeCreases -writeUVSets -writeVisibility -dataFormat ogawa'
+
     selNodes = cmds.ls(sl=True, l=True)
     allSelReferenceNodes = find_referenced_nodes(selNodes)
 
@@ -66,9 +68,7 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
                 abcPath = abcExportPathDir + '/' + refNS + '.abc'
                 tmpout = tmpDir + '/' + refNS + '.abc'
 
-                options = '-attr source -uvWrite -ro -worldSpace -writeCreases -writeUVSets -writeVisibility -dataFormat ogawa'
-
-                command = '-frameRange ' + str(startFrame) + ' ' + str(endFrame) + ' ' + options
+                command = '-frameRange ' + str(startFrame) + ' ' + str(endFrame) + ' ' + abc_options
                 command += ' -root ' + nodeToExport
                 command += ' -file ' + tmpout
                 print(command)
@@ -100,9 +100,7 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
             abcPath = abcExportPathDir + '/' + refNS + '.abc'
             tmpout = tmpDir + '/' + refNS + '.abc'
 
-            options = '-attr source -uvWrite -ro -worldSpace -writeCreases -writeUVSets -writeVisibility -dataFormat ogawa'
-
-            command = '-frameRange ' + str(startFrame) + ' ' + str(endFrame) + ' ' + options
+            command = '-frameRange ' + str(startFrame) + ' ' + str(endFrame) + ' ' + abc_options
             command += ' -root ' + nodeToExport
             command += ' -file ' + tmpout
             print(command)
