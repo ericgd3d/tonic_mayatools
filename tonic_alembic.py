@@ -50,14 +50,17 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
     if allSelReferenceNodes:
         for refNode in allSelReferenceNodes:
             referenced_nodes = cmds.referenceQuery(refNode, nodes=True)
-
             if referenced_nodes:
+
+                TMP_NODE = None
 
                 nodeToExport = referenced_nodes[0]
                 for currRefNode in referenced_nodes:
+                    if cmds.nodeType(currRefNode) == 'camera':
+                        nodeToExport = create_baked_cam_from_node(currRefNode, startFrame, endFrame)
+                        TMP_NODE = nodeToExport
                     if currRefNode.endswith(':renderGeo_grp'):
                         nodeToExport = currRefNode
-
 
                 #Add currscene attr to root node
                 cmds.addAttr(nodeToExport, ln="source", dt="string")
@@ -78,6 +81,10 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
                 #Delete the extra attribute
                 cmds.deleteAttr(nodeToExport, attribute='source')
 
+                #Delete the tmp node
+                if TMP_NODE:
+                    cmds.delete(TMP_NODE)
+
                 print('Saving ' + abcPath)
                 if not os.path.exists(abcExportPathDir):
                     os.makedirs(abcExportPathDir)
@@ -86,8 +93,13 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
     else:
         for node in selNodes:
             nodeToExport = node
+            TMP_NODE = None
+
             allDesc = list_hierarchy(node)
             for currRefNode in allDesc:
+                if cmds.nodeType(currRefNode) == 'camera':
+                    nodeToExport = create_baked_cam_from_node(currRefNode, startFrame, endFrame)
+                    TMP_NODE = nodeToExport
                 if currRefNode.endswith(':renderGeo_grp'):
                     nodeToExport = currRefNode
 
@@ -109,6 +121,10 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
 
             # Delete the extra attribute
             cmds.deleteAttr(nodeToExport, attribute='source')
+
+            # Delete the tmp node
+            if TMP_NODE:
+                cmds.delete(TMP_NODE)
 
             print('Saving ' + abcPath)
             if not os.path.exists(abcExportPathDir):
@@ -169,3 +185,21 @@ def get_all_CRTLS_nodes():
             all_ctrls.append(node)
     return all_ctrls
 
+def create_baked_cam_from_node(orig_cam, startFrame, endFrame):
+    orig_cam_transform = cmds.listRelatives(orig_cam, p=True, f=True)
+    new_cam_transform_sibling = cmds.duplicate(orig_cam_transform)[0]
+
+    new_cam_transform = cmds.parent(new_cam_transform_sibling, world=True)[0]
+
+    #Unlock the attributes
+    all_attrs = ['.tx', '.ty', '.tz', '.rx', '.ry', '.rz', '.sx', '.sy', '.sz', '.v']
+    for attr in all_attrs:
+        cmds.setAttr(new_cam_transform+attr, lock=False)
+
+    cnstr = cmds.parentConstraint(orig_cam_transform, new_cam_transform)
+
+    cmds.bakeResults(new_cam_transform, t=(startFrame, endFrame), at=all_attrs)
+
+    all_children_cnst = cmds.listRelatives(new_cam_transform, ad=True, type='constraint')
+    cmds.delete(all_children_cnst)
+    return new_cam_transform
