@@ -49,7 +49,7 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
 
     if allSelReferenceNodes:
         for refNode in allSelReferenceNodes:
-            referenced_nodes = cmds.referenceQuery(refNode, nodes=True)
+            referenced_nodes = cmds.referenceQuery(refNode, nodes=True, dagPath=True)
             if referenced_nodes:
 
                 TMP_NODE = None
