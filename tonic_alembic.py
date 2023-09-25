@@ -63,7 +63,8 @@ def ton_legacy_export_sel_abc(full_temp_dir=None):
                         nodeToExport = currRefNode
 
                 #Add currscene attr to root node
-                cmds.addAttr(nodeToExport, ln="source", dt="string")
+                if not cmds.attributeQuery('source', node=nodeToExport, exists=True):
+                    cmds.addAttr(nodeToExport, ln="source", dt="string")
                 cmds.setAttr(nodeToExport + ".source", scene_path, type="string")
 
                 refNS = cmds.referenceQuery(refNode, namespace=True)[1:]
