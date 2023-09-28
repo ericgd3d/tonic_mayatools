@@ -99,7 +99,7 @@ def replace_extension(file_path, new_extension):
 def last_word_key(s):
     words = s.split()
     return words[-1]
-def ngs_convertSelFileNodeTextureToRedshiftTexture():
+def ngs_convertFileNodeTextureToRedshiftTexture():
     import maya.cmds as cmds
     import os
     import glob
