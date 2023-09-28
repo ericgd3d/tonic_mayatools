@@ -22,3 +22,11 @@ def create_menu():
                   command='import tonic_alembic;tonic_alembic.ton_legacy_export_sel_abc()',
                   imageOverlayLabel='ExportAbc')
 
+    tonic_asset_menu = cmds.menuItem(subMenu=True, tearOff=True, parent=menu, label='Assets')
+    cmds.menuItem(parent=tonic_asset_menu,
+                  label='Convert All Textures into Rstexbin',
+                  command='import tonic_rstexbin;tonic_rstexbin.ngs_convertFileNodeTextureToRedshiftTexture()',
+                  imageOverlayLabel='Convert2Rstexbin')
+
+
+
