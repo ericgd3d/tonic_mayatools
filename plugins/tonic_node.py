@@ -3,7 +3,7 @@ import maya.OpenMaya as OpenMaya
 import maya.OpenMayaMPx as OpenMayaMPx
 import maya.OpenMayaRender as OpenMayaRender
 
-nodeTypeName = "tdnaNode"
+nodeTypeName = "tonicNode"
 nodeTypeId = OpenMaya.MTypeId(0x87922)
 
 glRenderer = OpenMayaRender.MHardwareRenderer.theRenderer()
