@@ -32,13 +32,13 @@ class TonicSaveDialog(QDialog):
 
         server = os.environ["TONIC_SERVER"]
         self.current_sgtask = None
-
+        self.next_publish_file = None
         if server:
             self.sg = sg_utils.get_sg(server)
             self.current_sgtask = tonic_nodeUtil.tonic_get_current_sgtask(self.sg)
 
         if self.current_sgtask:
-            #print(self.current_sgtask)
+            print(self.current_sgtask)
             next_version_number = 1
             published_files = sg_utils.tonic_get_publish_files(self.sg, self.current_sgtask)
             if published_files:
@@ -47,12 +47,23 @@ class TonicSaveDialog(QDialog):
                 if latest_version_number:
                     next_version_number = latest_version_number + 1
 
+            #server, sg, template_name, task_dict, version):
+
+            if self.current_sgtask['entity']['type'] == 'Asset':
+                template_name = 'maya_asset_work'
+            elif self.current_sgtask['entity']['type'] == 'Shot':
+                template_name = 'maya_shot_work'
 
 
-        #latest_publish_file = sg_utils.tonic_get_latest_publishfile
-        #next_publish_file =
+            self.next_publish_file = sg_utils.tonic_get_path_from_template(server, self.sg, template_name=template_name, task_dict=self.current_sgtask, version=next_version_number)
+            if self.next_publish_file:
+                print(self.next_publish_file)
 
-        lbl_filename = QLabel("filename")
+        if self.next_publish_file:
+            lbl_filename = QLabel(os.path.basename(self.next_publish_file))
+        else:
+            lbl_filename = QLabel("filename")
+
         lbl_filename.setFont(QtGui.QFont("", 18))
         lbl_filename.setAlignment(QtCore.Qt.AlignCenter)
         top_layout.addWidget(lbl_filename)
