@@ -14,7 +14,12 @@ def tonic_openerMaya():
 
         task_id = os.environ['TONIC_TASK_ID']
 
-        tonic_nodeUtil.tonic_create_tonic_node_for_task_id(int(task_id))
+        #If it doesn't have a tonic_node, create one
+        all_existing_tonicnodes = tonic_nodeUtil.tonic_get_all_tonic_nodes()
+        if all_existing_tonicnodes:
+            pass
+        else:
+            tonic_nodeUtil.tonic_create_tonic_node_for_task_id(int(task_id))
 
 
 def tonic_hijackSaveAs(enable=True):
