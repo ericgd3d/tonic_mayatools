@@ -42,14 +42,21 @@ def tonic_createTonicNode(d):
             attribute_name = "is" + group_name
             cmds.addAttr(group_node, longName=attribute_name, attributeType="bool")
             cmds.setAttr(f"{group_node}.{attribute_name}", True)
-
             cmds.parent(group_node, origNNt)
+
 
         # Create cameras
         allAssetCams = tonic_createAssetCameras(d, nodeTaskName)
         camGrp = cmds.group(allAssetCams, n='CAMERA_GRP', p=origNNt[0])
         cmds.addAttr(camGrp, longName='isCAMERA_GRP', attributeType="bool")
         cmds.setAttr(camGrp+'.isCAMERA_GRP', True)
+
+        #Lock all groups inside
+        all_grp_nodes = cmds.listRelatives(origNNt, c=True, f=True )
+        for grp in all_grp_nodes:
+            cmds.lockNode(grp, lock=True)
+
+        cmds.lockNode(origNNt, lock=True)
 
     return origNN
 
