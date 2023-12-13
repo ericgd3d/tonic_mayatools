@@ -11,7 +11,7 @@ def tonic_openerMaya():
 
         #Hijack some default Maya Menus
         tonic_hijackSaveAs()
-        #tonic_hijackOpen()
+        tonic_hijackOpen()
 
         task_id = os.environ['TONIC_TASK_ID']
 
@@ -58,5 +58,5 @@ def tonic_hijackOpen(enable=True):
         cmds.menuItem(u"openProject", edit=True, label="Open Scene...", command='import tonic_browserGUI;mainwindow=tonic_browserGUI.MainWindow(\'InsideApp:True;OpenTask:True;Inspector:False\')')
         cmds.menuItem(u"openFileOptions", edit=True, command='import tonic_browserGUI;mainwindow=tonic_browserGUI.MainWindow(\"InsideApp:True;OpenTask:True;Inspector:False\")')
         # hijack CTRL-O named command
-        cmds.nameCommand(u"NameComOpen_File", annotation="Tonic Open File", command='python(\"import tonic_browserGUI;mainwindow=tonic_browserGUI.MainWindow(\'InsideApp:True;OpenTask:True;Inspector:False\')\")')
+        cmds.nameCommand(u"NameComOpen_File", annotation="Tonic Open File", command='python(\"import tonic_browserGUI;mainwindow=tonic_browserGUI.MainWindow(\'InsideApp:True\')\")')
 
