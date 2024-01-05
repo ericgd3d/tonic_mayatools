@@ -39,17 +39,18 @@ def tonic_createTonicNode(d):
         # Add attributes to the groups
         for group_node, group_name in zip(group_nodes, group_names):
             # Add a boolean attribute to represent if the group is of this type
-            attribute_name = "is" + group_name
+            attribute_name = "tonicIs" + group_name
             cmds.addAttr(group_node, longName=attribute_name, attributeType="bool")
             cmds.setAttr(f"{group_node}.{attribute_name}", True)
+            tonic_createCustomAttr(group_node, d)
             cmds.parent(group_node, origNNt)
 
 
         # Create cameras
         allAssetCams = tonic_createAssetCameras(d, nodeTaskName)
         camGrp = cmds.group(allAssetCams, n='CAMERA_GRP', p=origNNt[0])
-        cmds.addAttr(camGrp, longName='isCAMERA_GRP', attributeType="bool")
-        cmds.setAttr(camGrp+'.isCAMERA_GRP', True)
+        cmds.addAttr(camGrp, longName='tonicIsCAMERA_GRP', attributeType="bool")
+        cmds.setAttr(camGrp+'.tonicIsCAMERA_GRP', True)
 
         #Lock all groups inside
         all_grp_nodes = cmds.listRelatives(origNNt, c=True, f=True )
@@ -121,3 +122,16 @@ def tonic_get_current_sgtask(sg):
         task_dict = sg_utils.get_task_from_id(sg, task_id)
         return task_dict
     return None
+
+def tonic_get_tonicNode_subGroup(tonic_node, grp):
+    import maya.cmds as cmds
+    all_with_grp = []
+    tonic_node_transform = cmds.listRelatives(tonic_node, p=True, f=True)
+    all_descendants = cmds.listRelatives(tonic_node_transform, type='transform', ad=True, f=True)
+    for desc in all_descendants:
+        print(desc)
+        if cmds.attributeQuery(grp, node=desc, exists=True):
+            all_with_grp.append(desc)
+    return all_with_grp
+
+
