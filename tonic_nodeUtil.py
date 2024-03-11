@@ -28,6 +28,8 @@ def tonic_createTonicNode(d):
 
     tonic_createCustomAttr(origNN, d)
 
+    attr_to_lock = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz']
+
     if d['entity']['type'] == 'Asset':
         group_names = ["GEO_GRP", "RIG_GRP", "CTR_GRP", "DATA_GRP"]
         group_nodes = []
@@ -42,7 +44,12 @@ def tonic_createTonicNode(d):
             attribute_name = "tonicIs" + group_name
             cmds.addAttr(group_node, longName=attribute_name, attributeType="bool")
             cmds.setAttr(f"{group_node}.{attribute_name}", True)
+
+            for attr in attr_to_lock:
+                cmds.setAttr(group_node + '.' + attr, lock=True)
+
             tonic_createCustomAttr(group_node, d)
+
             cmds.parent(group_node, origNNt)
 
 
@@ -51,6 +58,8 @@ def tonic_createTonicNode(d):
         camGrp = cmds.group(allAssetCams, n='CAMERA_GRP', p=origNNt[0])
         cmds.addAttr(camGrp, longName='tonicIsCAMERA_GRP', attributeType="bool")
         cmds.setAttr(camGrp+'.tonicIsCAMERA_GRP', True)
+        for attr in attr_to_lock:
+            cmds.setAttr(camGrp + '.' + attr, lock=True)
 
         #Lock all groups inside
         all_grp_nodes = cmds.listRelatives(origNNt, c=True, f=True )
