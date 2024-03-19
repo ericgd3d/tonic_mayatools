@@ -33,9 +33,11 @@ def tonic_mayaModel_to_fbx(out_fbx):
             cmds.file(out_fbx, force=True, options="v = 0", type="FBX export", exportSelected=True)
 
             if DEBUG:
-                print('### output')
+                print('### output fbx')
                 print(out_fbx)
 
+            return out_fbx
+    return None
 
 def tonic_mayaModel_to_abc(out_abc):
     import tonic_nodeUtil
@@ -75,5 +77,8 @@ def tonic_mayaModel_to_abc(out_abc):
             cmds.AbcExport(j=command)
 
             if DEBUG:
-                print('### output')
+                print('### output abc')
                 print(out_abc)
+
+            return out_abc
+    return None
