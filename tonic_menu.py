@@ -28,5 +28,9 @@ def create_menu():
                   command='import tonic_rstexbin;tonic_rstexbin.ngs_convertFileNodeTextureToRedshiftTexture()',
                   imageOverlayLabel='Convert2Rstexbin')
 
+    cmds.menuItem(parent=tonic_asset_menu,
+                  label='Import Asset',
+                  command='import tonic_importAssetGUI;mainwindow=tonic_importAssetGUI.MainWindow()',
+                  imageOverlayLabel='Import Asset')
 
 
