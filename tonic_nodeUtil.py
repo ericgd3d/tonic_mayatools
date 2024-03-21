@@ -138,7 +138,7 @@ def tonic_get_tonicNode_subGroup(tonic_node, grp):
     tonic_node_transform = cmds.listRelatives(tonic_node, p=True, f=True)
     all_descendants = cmds.listRelatives(tonic_node_transform, type='transform', ad=True, f=True)
     for desc in all_descendants:
-        print(desc)
+        #print(desc)
         if cmds.attributeQuery(grp, node=desc, exists=True):
             all_with_grp.append(desc)
     return all_with_grp
