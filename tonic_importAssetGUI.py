@@ -40,7 +40,7 @@ class qTask(QtWidgets.QLabel):
             html_content = '<style type="text/css">p, li { white-space: pre-wrap; }</style>' \
                         '</head><body style=" font-family:"Cantarell"; font-size:11pt; font-weight:400; font-style:normal;">' \
                         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; '\
-                        'text-indent:0px; text-align:center; font-size:14pt">' \
+                        'text-indent:0px; text-align:left; font-size:10pt">' \
                         '<span style=" font-weight:600;">%s </span> </p></body></html>' \
                            % (self.entity + '  (v' + '{:03d}'.format(int(self.version))+ ')')
 
@@ -100,26 +100,42 @@ class MainWindow(QMainWindow):
     def btn_open_click(self):
 
         print('open click')
-        '''
-        
+
         for i in self.ui.tbl_tasks.selectedIndexes():
-            print 'ngs_importAsset2GUI| i: %s' % i
+            print('ngs_importAsset2GUI| i: %s' % i)
 
             if self.tables_tasks:
                 assetName = (self.tables_tasks[i.row()].entity).replace(' ', '')
 
+                #Get the namespace name. We put R1 at the end for Reference1. Maya will get the next available number. We will retrieve this numver later
                 cmds.namespace(set=':')
                 assetNamespace = (assetName + '_R1')
-                for i in range(1, 1000):
-                    assetNamespace = (assetName + '_R' + str(i))
-                    if not cmds.namespace(exists=assetNamespace):
-                        assetNamespace = cmds.namespace(add=assetNamespace)
-                        break
-                cmds.namespace(set=assetNamespace)
-                out = ngs_usdStageUtil.ngs_importUsdAsset(tk, self.NGS_PROJECT, assetName, doMesh=True, doShading=True, doMat=True, matNs=None)
-                cmds.namespace(set=':')
-                print out
-        '''
+
+
+                # Reference the Alembic file
+                alembic_file_path = (self.tables_tasks[i.row()].filepath)
+                all_nodes_before = set(cmds.ls(l=True))
+                cmds.file(alembic_file_path, reference=True, namespace=assetNamespace)
+                all_nodes_after = set(cmds.ls(l=True))
+                new_nodes = list(all_nodes_after - all_nodes_before)
+
+                if new_nodes:
+                    import tonic_mayaUtil
+
+                    #Create the root group with the same namespace as the referenced asset
+                    #Time to retrieve the namespace name given automatically by maya
+                    all_ns = tonic_mayaUtil.tonic_get_all_namespaces_of_list(new_nodes)
+                    if all_ns:
+                        root_group = cmds.group(name=all_ns[0]+':Root', em=True)
+                    else:
+                        root_group = cmds.group(name=assetNamespace+':Root', em=True)
+
+                    #Parent the referenced asset to the root node
+                    all_roots = tonic_mayaUtil.tonic_get_all_roots_of_list(new_nodes)
+                    if all_roots:
+                        cmds.parent(all_roots, root_group)
+
+
 
     def load_ui(self):
         # load UI
@@ -189,7 +205,7 @@ class MainWindow(QMainWindow):
                 new_task.entity = '   ' + str(all_filtered_publishes[t]['asset_name'])
                 new_task.step = '   ' + str(all_filtered_publishes[t]['step_name'])
                 new_task.version = str(all_filtered_publishes[t]['version_nb'])
-
+                new_task.filepath = str(all_filtered_publishes[t]['filepath'])
 
                 # create the widget
                 new_task.create()
@@ -218,26 +234,27 @@ class MainWindow(QMainWindow):
         all_published_files = sg_utils.tonic_get_publish_files(self.sg, task_dict=sgtask, file_type=published_file_type_name,
                                                       approved_only=True)
 
-        for pf in all_published_files:
-            a = {}
+        if all_published_files:
+            for pf in all_published_files:
+                a = {}
 
-            #print(pf)
-            #Get info on the asset
+                #print(pf)
+                #Get info on the asset
 
-            sg_asset = sg_utils.get_sg_entity_by_id(self.sg, pf['entity']['type'], pf['entity']['id'], ['sg_asset_type'])
-            sg_task = sg_utils.get_sg_entity_by_id(self.sg, 'Task', pf['task']['id'], ['step'])
+                sg_asset = sg_utils.get_sg_entity_by_id(self.sg, pf['entity']['type'], pf['entity']['id'], ['sg_asset_type'])
+                sg_task = sg_utils.get_sg_entity_by_id(self.sg, 'Task', pf['task']['id'], ['step'])
 
-            #print(sg_asset)
-            #print(sg_task)
-            a['asset_type'] = sg_asset['sg_asset_type']
-            a['asset_name'] = pf['entity']['name']
-            a['step_name'] = sg_task['step']['name']
-            a['task_id'] = sg_task['id']
-            a['version_nb'] = pf['version_number']
-            a['filepath'] = pf['path_cache']
-            a['publish_file_id'] = pf['id']
-
-            all_publishes.append(a)
+                #print(sg_asset)
+                #print(sg_task)
+                a['asset_type'] = sg_asset['sg_asset_type']
+                a['asset_name'] = pf['entity']['name']
+                a['step_name'] = sg_task['step']['name']
+                a['task_id'] = sg_task['id']
+                a['version_nb'] = pf['version_number']
+                a['filepath'] = pf['path_cache']
+                a['publish_file_id'] = pf['id']
+                a['date'] = pf['created_at']
+                all_publishes.append(a)
 
         return all_publishes
 
