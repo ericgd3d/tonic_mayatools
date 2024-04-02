@@ -21,8 +21,6 @@ def tonic_get_all_namespaces_of_list(list_of_nodes):
     all_ns = []
     for n in list_of_nodes:
         r = tonic_get_root_of_node(n)
-        print('r')
-        print(r)
         if r and ':' in r:
             split_obj = r.split(':')
             ns = split_obj[0]
