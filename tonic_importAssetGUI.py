@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         self.load_ui()
 
         # set window icon
-        self.ui.setWindowIcon(QtGui.QIcon('C:/TonicDNA/Pipeline/scripts/tonic_gui/TonicDNA_monogram-GREEN_RGB-768x536.png'))
+        self.ui.setWindowIcon(QtGui.QIcon('Q:/TonicDNA/Pipeline/scripts/tonic_gui/TonicDNA_monogram-GREEN_RGB-768x536.png'))
 
 
         #Override default values
@@ -144,7 +144,7 @@ class MainWindow(QMainWindow):
 
 
         self.TONIC_UIVERSION = '%s-ui-%s' % (dev_version, ui_version)
-        uifile = QFile('C:/TonicDNA/Pipeline/scripts/tonic_gui/tonic_qTask_%s.ui' % ui_version)
+        uifile = QFile('Q:/TonicDNA/Pipeline/scripts/tonic_gui/tonic_qTask_%s.ui' % ui_version)
 
         ver_html_content = '<html><head/><body><p><span style=" color:#646464;">%s</span></p></body></html>' % self.TONIC_UIVERSION
 
@@ -164,7 +164,7 @@ class MainWindow(QMainWindow):
         self.ui.lbl_uiversion.setText(ver_html_content)
 
         # force logo path
-        self.ui.lbl_logo.setPixmap('C:/TonicDNA/Pipeline/scripts/tonic_gui/TonicDNA_monogram-GREEN_RGB-768x536.png')
+        self.ui.lbl_logo.setPixmap('Q:/TonicDNA/Pipeline/scripts/tonic_gui/TonicDNA_monogram-GREEN_RGB-768x536.png')
         self.ui.btn_ok.clicked.connect(self.btn_open_click)
         self.ui.btn_cancel.clicked.connect(self.btn_cancel_click)
         self.ui.btn_clear_sel.clicked.connect(self.btn_clear_sel_click)
